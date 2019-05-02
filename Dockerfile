@@ -47,7 +47,7 @@ RUN export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
     source activate rapids && \
     pip install --upgrade pip==19.0.1 && \
     pip --no-cache-dir install jupyterhub matplotlib \
-    nodejs ipywidgets ipyvolume python-graphviz && \
+    nodejs ipywidgets ipyvolume && \
     jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyvolume jupyter-threejs
 
 # Install Tini - used as entrypoint for container
