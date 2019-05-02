@@ -1,28 +1,5 @@
 FROM nvcr.io/nvidia/rapidsai/rapidsai:0.6-cuda10.0-runtime-ubuntu18.04-gcc7-py3.7
 
-RUN apt update && apt -y upgrade
-
-RUN source activate rapids && conda install -y -c conda-forge nodejs
-
-RUN source activate rapids && conda install -y -c conda-forge ipywidgets
-RUN source activate rapids && jupyter labextension install @jupyter-widgets/jupyterlab-manager
-
-RUN source activate rapids && conda install -y -c conda-forge ipyvolume
-
-RUN source activate rapids && jupyter labextension install ipyvolume
-RUN source activate rapids && jupyter labextension install jupyter-threejs
-
-RUN source activate rapids && conda install -c conda-forge python-graphviz 
-
-RUN apt -y --fix-missing install font-manager unzip git vim htop
-
-RUN git clone https://github.com/miroenev/rapids
-
-RUN cd rapids && mkdir -p kaggle_data/2017 && mv kaggle-survey-2017.zip kaggle_data/2017 && cd kaggle_data/2017 && unzip *.zip
-RUN cd rapids && mkdir -p kaggle_data/2018 && mv kaggle-survey-2018.zip kaggle_data/2018 && cd kaggle_data/2018 && unzip *.zip
-
-RUN cd rapids && cd kaggle_data && wget -O results.csv https://raw.githubusercontent.com/adgirish/kaggleScape/d291e121b2ece69cac715b4c89f4f19b684d4d02/results/annotResults.csv
-
 USER root
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -42,8 +19,8 @@ ENV PATH /usr/local/nvidia/bin:$PATH
 SHELL ["/bin/bash", "-c"]
 
 # add https support
-RUN apt-get update && apt-get install -yq --no-install-recommends \
-    apt-transport-https locales lsb-release wget
+RUN apt-get update && apt-get install -yq --no-install-recommends --fix-missing \
+    apt-transport-https locales lsb-release wget font-manager unzip git
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
@@ -69,7 +46,9 @@ RUN export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
     # Install to the existing RapidsAI conda env
     source activate rapids && \
     pip install --upgrade pip==19.0.1 && \
-    pip --no-cache-dir install jupyterhub matplotlib
+    pip --no-cache-dir install jupyterhub matplotlib \
+    nodejs ipywidgets ipyvolume python-graphviz && \
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyvolume jupyter-threejs
 
 # Install Tini - used as entrypoint for container
 RUN cd /tmp && \
@@ -83,6 +62,23 @@ RUN chown -R ${NB_USER}:users $HOME
 ENV GITHUB_REF https://raw.githubusercontent.com/kubeflow/kubeflow/master/components/tensorflow-notebook-image
 
 ADD --chown=jovyan:users $GITHUB_REF/jupyter_notebook_config.py /tmp
+
+RUN cd / && \
+    git clone https://github.com/miroenev/rapids && \
+    cd rapids && \
+    mkdir -p kaggle_data/2017 && \
+    mv kaggle-survey-2017.zip kaggle_data/2017 && \
+    cd kaggle_data/2017 && \
+    unzip *.zip && \
+    cd /rapids && \
+    mkdir -p kaggle_data/2018 && \
+    mv kaggle-survey-2018.zip kaggle_data/2018 && \
+    cd kaggle_data/2018 && \
+    unzip *.zip && \
+    cd /rapids && \
+    cd kaggle_data && \
+    wget -O results.csv https://raw.githubusercontent.com/adgirish/kaggleScape/d291e121b2ece69cac715b4c89f4f19b684d4d02/results/annotResults.csv && \
+    chown -R ${NB_USER}:users /rapids
 
 # Wipe $HOME for PVC detection later
 WORKDIR $HOME
