@@ -64,21 +64,21 @@ ENV GITHUB_REF https://raw.githubusercontent.com/kubeflow/kubeflow/master/compon
 ADD --chown=jovyan:users $GITHUB_REF/jupyter_notebook_config.py /tmp
 
 RUN cd / && \
-    git clone https://github.com/miroenev/rapids && \
-    cd rapids && \
+    git clone https://github.com/miroenev/rapids rapids-demo && \
+    cd rapids-demo && \
     mkdir -p kaggle_data/2017 && \
     mv kaggle-survey-2017.zip kaggle_data/2017 && \
     cd kaggle_data/2017 && \
     unzip *.zip && \
-    cd /rapids && \
+    cd /rapids-demo && \
     mkdir -p kaggle_data/2018 && \
     mv kaggle-survey-2018.zip kaggle_data/2018 && \
     cd kaggle_data/2018 && \
     unzip *.zip && \
-    cd /rapids && \
+    cd /rapids-demo && \
     cd kaggle_data && \
     wget -O results.csv https://raw.githubusercontent.com/adgirish/kaggleScape/d291e121b2ece69cac715b4c89f4f19b684d4d02/results/annotResults.csv && \
-    chown -R ${NB_USER}:users /rapids
+    chown -R ${NB_USER}:users /rapids-demo
 
 # Wipe $HOME for PVC detection later
 WORKDIR $HOME
